@@ -7,7 +7,7 @@ int curr_line;
 
 void init_globals() {
     curr_buffer = "";
-    curr_line = 1;
+    curr_line = 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -16,11 +16,16 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    std::string filename = std::string(argv[1]);
+    const auto filename = std::string(argv[1]);
 
     if (file_exists(filename) == false) {
         std::fprintf(stderr, "%s: no such file or directory: %s\n", program_name.c_str(), argv[1]);
         std::fprintf(stderr, "%s: error: no input files\n", program_name.c_str());
+        return EXIT_FAILURE;
+    }
+
+    if (ends_with(filename, ".c") == false) {
+        std::fprintf(stderr, "%s: error: invalid source file extension\n", program_name.c_str());
         return EXIT_FAILURE;
     }
 
@@ -29,9 +34,12 @@ int main(int argc, char* argv[]) {
     input_stream.open(filename, std::fstream::in);
 
     while (std::getline(input_stream, curr_buffer)) {
+        curr_line++;
         std::cout << "Parsing source line: " << curr_buffer << std::endl;
-        // Process the current line buffer
-        parser::parseStatements();
+        if (!curr_buffer.empty()) {
+            // Process the current line buffer
+            parser::parseBuffer();
+        }
     }
 
     input_stream.close();
