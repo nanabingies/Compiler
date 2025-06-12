@@ -16,20 +16,24 @@ namespace ast {
         NumberExprAST(const double value) : value(value) {}
     };
 
+    template<typename T>
     class VariableExprAST : public ExprAST {
         std::string name;
+        T value;
 
     public:
-        VariableExprAST(const std::string& name) : name(name) {}
+        VariableExprAST(const std::string& name, T value)
+            : name(name), value(std::move(value)) {}
     };
 
     class BinaryExprAST : public ExprAST {
+        int op;
         std::unique_ptr<ExprAST> LHS;
         std::unique_ptr<ExprAST> RHS;
 
     public:
-        BinaryExprAST(std::unique_ptr<ExprAST> left, std::unique_ptr<ExprAST> right)
-            : LHS(std::move(left)), RHS(std::move(right)) {}
+        BinaryExprAST(const int op, std::unique_ptr<ExprAST> left, std::unique_ptr<ExprAST> right)
+            : op(op), LHS(std::move(left)), RHS(std::move(right)) {}
     };
 
     class IdentifierExprAST : public ExprAST {
