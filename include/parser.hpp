@@ -4,7 +4,15 @@
 #include <iostream>
 
 namespace parser {
-    void parseStatements();
+    void parseBuffer();
+
+    void parseStatement();
+
+    void parseFunctionPrototype();
+
+    void parseFunction();
+
+    void parseKeywordStatement();
 }
 
 #endif

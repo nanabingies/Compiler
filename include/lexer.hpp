@@ -32,7 +32,12 @@ enum tokens : std::int32_t {
     // Language impls
     tok_identifier,
     tok_number,
+    tok_double,
     tok_keyword,
+
+    tok_func_def,   // function definition
+    tok_func_decl,  // function declaration
+    tok_print       // printf
 };
 
 extern int curr_token;
@@ -45,7 +50,7 @@ extern int token_number_int;
 
 static std::unordered_set<std::string> keywords = { 
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
-    "else", "enum", "extern", "float", "for", "goto", "if", "int", "long",
+    "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", "printf",
     "register", "return", "short", "signed", "sizeof", "static", "struct", "switch",
     "typedef", "union", "unsigned", "void", "volatile", "while",
 
