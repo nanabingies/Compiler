@@ -1,28 +1,45 @@
 #ifndef __AST_HPP
 #define __AST_HPP
 #include <string>
+#include <memory>
 
 namespace ast {
     class ExprAST {
     public:
-        ~ExprAST() = delete;
+        virtual ~ExprAST() = default;
     };
 
     class NumberExprAST : public ExprAST {
-    private:
         double value;
 
     public:
-        NumberExprAST(double& value) : value(value) {}
-    }
+        NumberExprAST(const double value) : value(value) {}
+    };
 
     class VariableExprAST : public ExprAST {
-    private:
         std::string name;
 
     public:
         VariableExprAST(const std::string& name) : name(name) {}
-    }
+    };
+
+    class BinaryExprAST : public ExprAST {
+        std::unique_ptr<ExprAST> LHS;
+        std::unique_ptr<ExprAST> RHS;
+
+    public:
+        BinaryExprAST(std::unique_ptr<ExprAST> left, std::unique_ptr<ExprAST> right)
+            : LHS(std::move(left)), RHS(std::move(right)) {}
+    };
+
+    class IdentifierExprAST : public ExprAST {
+        std::string name;
+        std::unique_ptr<ExprAST> value;
+
+    public:
+        IdentifierExprAST(const std::string& name, std::unique_ptr<ExprAST> value)
+            : name(name), value(std::move(value)) {}
+    };
 };
 
 #endif
