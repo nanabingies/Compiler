@@ -10,14 +10,7 @@ int token_number_int;
 //std::string token_number_str;
 
 int getNext() {
-    const int tok = static_cast<unsigned char>(curr_buffer[curr_token_index++]);
-
-    if (tok == '\n') {
-        curr_line++;
-        curr_token_index = 0;
-    }
-    curr_token = tok;
-    return tok;
+    return static_cast<unsigned char>(curr_buffer[curr_token_index++]);
 }
 
 bool isKeyword(std::string& word) {
@@ -46,6 +39,7 @@ namespace lexer {
 
             // Keywords
             if (isKeyword(identifier_str)) {
+                keyword_str = std::move(identifier_str);
                 return tok_keyword;
             }
 
@@ -64,7 +58,7 @@ namespace lexer {
             // Putback the previous read token
             curr_token_index -= 1;
 
-            token_number_int = std::stoi(number_str); //strtod(number_str.c_str(), nullptr);
+            token_number_int = std::stoi(number_str);
             return tok_number;
         }
 
@@ -73,11 +67,12 @@ namespace lexer {
             return tok_eof;
         }
 
-        // Binary operators
-        if (isBinaryOperator(std::to_string(tok))) {
-            std::cout << "Token '" << static_cast<char>(tok) << "' is an operator.\n";
+        if (static_cast<char>(tok) == '=') {
+            // TODO: read ahead for == comparisons
+            return tok_equals;
         }
 
+        // Binary operators
         if (static_cast<char>(tok) == '+') {
             return tok_plus;
         } else if (static_cast<char>(tok) == '-') {
@@ -88,6 +83,16 @@ namespace lexer {
             return tok_div;
         } else if (static_cast<char>(tok) == ';') {
             return tok_semicolon;
+        }
+
+        if (static_cast<char>(tok) == ')') {
+            return tok_open_b;
+        } else if (static_cast<char>(tok) == '(') {
+            return tok_close_b;
+        } else if (static_cast<char>(tok) == '{') {
+            return tok_open_c;
+        } else if (static_cast<char>(tok) == '}') {
+            return tok_close_c;
         }
 
         return tok_invalid;
