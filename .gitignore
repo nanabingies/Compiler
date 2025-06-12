@@ -1,2 +1,5 @@
 .vscode/settings.json
 .vscode/launch.json
+.idea/editor.xml
+.idea/misc.xml
+.idea/vcs.xml
