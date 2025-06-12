@@ -25,7 +25,6 @@ int main(int argc, char* argv[]) {
 
     init_globals();
 
-    curr_buffer = "";
     input_stream.open(filename, std::fstream::in);
 
     while (std::getline(input_stream, curr_buffer)) {

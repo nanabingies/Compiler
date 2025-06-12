@@ -16,8 +16,18 @@ int get_next() {
         curr_line++;
         curr_token_index = 0;
     }
+    curr_token = tok;
 
     return tok;
+}
+
+bool is_keyword(std::string& word) {
+    for (auto key : keywords) {
+        if (key == word)
+            return true;
+    }
+
+    return false;
 }
 
 namespace lexer {
@@ -27,21 +37,30 @@ namespace lexer {
             tok = get_next();
         }
 
-        curr_token = tok;
+        if (isalpha(tok)) {
+            identifier_str = static_cast<char>(tok);
 
-        std::istringstream sub(curr_buffer);
-        std::string curr_sub = "";
-
-        while (sub >> curr_sub) {
-            //std::cout << curr_sub << std::endl;
-            for (unsigned i = 0; i < curr_sub.size(); i++, curr_token_index++) {
-                if (isdigit(curr_sub[i])) {
-                    // read ahead
-                    if (!isdigit(curr_sub[i]))
-                        return tok_number;
-                    token_number_str += curr_sub[i];
-                }
+            while (isalnum(tok = get_next())) {
+                identifier_str += static_cast<char>(tok);
             }
+
+            if (is_keyword(identifier_str)) {
+                // Keywords
+            }
+        }
+
+        if (isdigit(tok) || static_cast<char>(tok) == '.') {
+            do {
+                token_number_str += tok;
+                tok = get_next();
+            } while (isdigit(tok) || static_cast<char>(tok) == '.');
+
+            token_number_int = strtod(token_number_str.c_str(), nullptr);
+            return tok_number;
+        }
+
+        if (static_cast<char>(tok) == EOF) {
+            return tok_eof;
         }
 
         return tok_invalid;
