@@ -3,7 +3,7 @@
 #include "../include/utils.hpp"
 
 namespace parser {
-    void parse_statements() {
+    void parseStatements() {
         while (true) {
             int32_t tok = lexer::getNextToken();
             

@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace parser {
-    void parse_statements();
+    void parseStatements();
 }
 
 #endif

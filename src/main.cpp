@@ -1,4 +1,5 @@
 #include "../include/lexer.hpp"
+#include "../include/parser.hpp"
 #include "../include/utils.hpp"
 
 std::string curr_buffer;
@@ -28,9 +29,9 @@ int main(int argc, char* argv[]) {
     input_stream.open(filename, std::fstream::in);
 
     while (std::getline(input_stream, curr_buffer)) {
-        std::cout << curr_buffer << std::endl;
+        std::cout << "Parsing source line: " << curr_buffer << std::endl;
         // Process the current line buffer
-        lexer::getNextToken();
+        parser::parseStatements();
     }
 
     input_stream.close();
