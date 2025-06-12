@@ -10,7 +10,7 @@ int token_number_int;
 //std::string token_number_str;
 
 int getNext() {
-    int tok = curr_buffer[curr_token_index++];
+    const int tok = static_cast<unsigned char>(curr_buffer[curr_token_index++]);
 
     if (tok == '\n') {
         curr_line++;
@@ -25,7 +25,7 @@ bool isKeyword(std::string& word) {
 }
 
 bool isBinaryOperator(const std::string& token) {
-    return operators.find(token) != operators.end();
+    return binaryOperators.find(token) != binaryOperators.end();
 }
 
 namespace lexer {
@@ -54,7 +54,7 @@ namespace lexer {
 
         // Number literals
         if (isdigit(tok) || static_cast<char>(tok) == '.') {
-            std::string number_str = "";
+            std::string number_str;
             token_number_int = 0;
             do {
                 number_str += tok;
@@ -64,20 +64,31 @@ namespace lexer {
             // Putback the previous read token
             curr_token_index -= 1;
 
-            token_number_int = strtod(number_str.c_str(), nullptr);
+            token_number_int = std::stoi(number_str); //strtod(number_str.c_str(), nullptr);
             return tok_number;
         }
 
         // EOF characters
-        if (static_cast<char>(tok) == EOF || static_cast<char>(tok) == '\n') {
+        if (static_cast<char>(tok) == EOF || static_cast<char>(tok) == '\0') {
             return tok_eof;
         }
 
         // Binary operators
-        if (isOperator(currentToken)) {
-            std::cout << "Token '" << currentToken << "' is an operator.\n";
+        if (isBinaryOperator(std::to_string(tok))) {
+            std::cout << "Token '" << static_cast<char>(tok) << "' is an operator.\n";
         }
 
+        if (static_cast<char>(tok) == '+') {
+            return tok_plus;
+        } else if (static_cast<char>(tok) == '-') {
+            return tok_minus;
+        } else if (static_cast<char>(tok) == '*') {
+            return tok_mul;
+        } else if (static_cast<char>(tok) == '/') {
+            return tok_div;
+        } else if (static_cast<char>(tok) == ';') {
+            return tok_semicolon;
+        }
 
         return tok_invalid;
     }

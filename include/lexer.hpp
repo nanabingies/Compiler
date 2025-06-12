@@ -3,6 +3,7 @@
 
 #include <map>
 #include <iostream>
+#include <unordered_set>
 
 //===----------------------------------------------------------------------===//
 // Lexer
@@ -11,6 +12,7 @@
 enum tokens : std::int32_t {
     tok_invalid = -1,
     tok_eof = 0,
+    tok_semicolon,
 
     // Binary operators
     tok_plus,   // +
@@ -40,9 +42,8 @@ extern std::string identifier_str;
 extern std::string keyword_str;
 
 extern int token_number_int;
-extern std::string token_number_str;
 
-static std::array<std::string, 44> keywords = { 
+static std::unordered_set<std::string> keywords = { 
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
     "else", "enum", "extern", "float", "for", "goto", "if", "int", "long",
     "register", "return", "short", "signed", "sizeof", "static", "struct", "switch",
@@ -54,6 +55,10 @@ static std::array<std::string, 44> keywords = {
     // Additional Keywords in C11
     "_Alignas", "_Alignof", "_Atomic", "_Generic", "_Noreturn", "_Static_assert",
     "_Thread_local"
+};
+
+const std::unordered_set<std::string> binaryOperators = {
+    "+", "-", "*", "/", "%", "=", "==", "!=", "<", ">", "<=", ">=", "&&", "||", "!", "&", "|", "^"
 };
 
 namespace lexer {
