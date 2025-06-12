@@ -7,9 +7,9 @@ int curr_token_index = 0;
 std::string identifier_str;
 std::string keyword_str;
 int token_number_int;
-std::string token_number_str;
+//std::string token_number_str;
 
-int get_next() {
+int getNext() {
     int tok = curr_buffer[curr_token_index++];
 
     if (tok == '\n') {
@@ -17,51 +17,67 @@ int get_next() {
         curr_token_index = 0;
     }
     curr_token = tok;
-
     return tok;
 }
 
-bool is_keyword(std::string& word) {
-    for (auto key : keywords) {
-        if (key == word)
-            return true;
-    }
+bool isKeyword(std::string& word) {
+    return keywords.find(word) != keywords.end();
+}
 
-    return false;
+bool isBinaryOperator(const std::string& token) {
+    return operators.find(token) != operators.end();
 }
 
 namespace lexer {
     tokens getNextToken() {
-        int tok = get_next();
+        int tok = getNext();
         while (isspace(tok)) {
-            tok = get_next();
+            tok = getNext();
         }
 
+        // Identifiers
         if (isalpha(tok)) {
             identifier_str = static_cast<char>(tok);
 
-            while (isalnum(tok = get_next())) {
+            while (isalnum(tok = getNext())) {
                 identifier_str += static_cast<char>(tok);
             }
+            curr_token_index -= 1;
 
-            if (is_keyword(identifier_str)) {
-                // Keywords
+            // Keywords
+            if (isKeyword(identifier_str)) {
+                return tok_keyword;
             }
+
+            return tok_identifier;
         }
 
+        // Number literals
         if (isdigit(tok) || static_cast<char>(tok) == '.') {
+            std::string number_str = "";
+            token_number_int = 0;
             do {
-                token_number_str += tok;
-                tok = get_next();
+                number_str += tok;
+                tok = getNext();
             } while (isdigit(tok) || static_cast<char>(tok) == '.');
 
-            token_number_int = strtod(token_number_str.c_str(), nullptr);
+            // Putback the previous read token
+            curr_token_index -= 1;
+
+            token_number_int = strtod(number_str.c_str(), nullptr);
             return tok_number;
         }
 
-        if (static_cast<char>(tok) == EOF) {
+        // EOF characters
+        if (static_cast<char>(tok) == EOF || static_cast<char>(tok) == '\n') {
             return tok_eof;
         }
+
+        // Binary operators
+        if (isOperator(currentToken)) {
+            std::cout << "Token '" << currentToken << "' is an operator.\n";
+        }
+
 
         return tok_invalid;
     }
