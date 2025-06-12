@@ -1,6 +1,7 @@
 #ifndef __LEXER_HPP_
 #define __LEXER_HPP_
 
+#include <map>
 #include <iostream>
 
 //===----------------------------------------------------------------------===//
@@ -40,6 +41,20 @@ extern std::string keyword_str;
 
 extern int token_number_int;
 extern std::string token_number_str;
+
+static std::array<std::string, 44> keywords = { 
+    "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
+    "else", "enum", "extern", "float", "for", "goto", "if", "int", "long",
+    "register", "return", "short", "signed", "sizeof", "static", "struct", "switch",
+    "typedef", "union", "unsigned", "void", "volatile", "while",
+
+    // Additional Keywords in C99
+    "_Bool", "_Complex", "_Imaginary", "inline", "restrict",
+
+    // Additional Keywords in C11
+    "_Alignas", "_Alignof", "_Atomic", "_Generic", "_Noreturn", "_Static_assert",
+    "_Thread_local"
+};
 
 namespace lexer {
     tokens getNextToken();
