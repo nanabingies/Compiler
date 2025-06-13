@@ -4,10 +4,18 @@
 
 std::string curr_buffer;
 int curr_line;
+std::map<char, int> binopPrecedence;
 
 void init_globals() {
     curr_buffer = "";
     curr_line = 0;
+    identifier_str = "";
+    keyword_str = "";
+
+    binopPrecedence['+'] = 10;
+    binopPrecedence['-'] = 10;
+    binopPrecedence['*'] = 20;
+    binopPrecedence['/'] = 20;
 }
 
 int main(int argc, char* argv[]) {

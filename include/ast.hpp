@@ -1,5 +1,7 @@
 #ifndef __AST_HPP
 #define __AST_HPP
+
+#include "../include/lexer.hpp"
 #include <string>
 #include <memory>
 
@@ -9,11 +11,18 @@ namespace ast {
         virtual ~ExprAST() = default;
     };
 
-    class NumberExprAST : public ExprAST {
+    class IntNumberExprAST : public ExprAST {
+        int value;
+
+    public:
+        IntNumberExprAST(const double value) : value(value) {}
+    };
+
+    class DoubleNumberExprAST : public ExprAST {
         double value;
 
     public:
-        NumberExprAST(const double value) : value(value) {}
+        DoubleNumberExprAST(const double value) : value(value) {}
     };
 
     template<typename T>
@@ -27,12 +36,12 @@ namespace ast {
     };
 
     class BinaryExprAST : public ExprAST {
-        int op;
+        tokens op;
         std::unique_ptr<ExprAST> LHS;
         std::unique_ptr<ExprAST> RHS;
 
     public:
-        BinaryExprAST(const int op, std::unique_ptr<ExprAST> left, std::unique_ptr<ExprAST> right)
+        BinaryExprAST(const tokens op, std::unique_ptr<ExprAST> left, std::unique_ptr<ExprAST> right)
             : op(op), LHS(std::move(left)), RHS(std::move(right)) {}
     };
 
