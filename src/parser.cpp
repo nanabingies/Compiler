@@ -24,19 +24,21 @@ namespace parser {
         return tok_invalid;
     }
 
-    void parseBuffer() {
+    void parseBuffer(Parser parser) {
         curr_token_index = 0;
         while (true) {
             auto tok = lexer::getNextToken();
 
             switch (tok) {
+                case tok_eof:
+                    return;
                 case tok_identifier:
                     std::fprintf(stdout, "Handling tok_identifier\n");
-                    parseStatement();
+                    parser.parseStatement();
                     break;
                 case tok_keyword:
                     std::fprintf(stdout, "Handling tok_keyword\n");
-                    parseKeywordStatement();
+                    parser.parseKeywordStatement();
                     break;
                 case tok_print:
                     std::fprintf(stderr, "Print Not yet implemented\n");
@@ -148,7 +150,7 @@ namespace parser {
         }
     }
 
-    std::unique_ptr<ast::ExprAST> parseKeywordStatement() {
+    std::unique_ptr<ast::ExprAST> Parser::parseKeywordStatement() {
         if (keyword_str.empty())    return nullptr;
 
         if (keyword_str == "int") {
@@ -179,11 +181,11 @@ namespace parser {
             // build a VariableExprAST
             if (nextToken == tok_semicolon) {
                 if (tempToken == tok_number) {
-                    auto variableAst = std::make_unique<ast::VariableExprAST<int>>(identStr, token_number_int);
+                    return std::make_unique<ast::VariableExprAST<int>>(identStr, token_number_int);
                 } else if (tempToken == tok_double) {
-                    auto variableAst = std::make_unique<ast::VariableExprAST<double>>(identStr, token_number_int);
+                    return std::make_unique<ast::VariableExprAST<double>>(identStr, token_number_int);
                 } else if (tempToken == tok_identifier) {
-                    auto variableAst = std::make_unique<ast::VariableExprAST<std::string>>(identStr, identifier_str);
+                    return std::make_unique<ast::VariableExprAST<std::string>>(identStr, identifier_str);
                 }
             }
 
@@ -196,6 +198,8 @@ namespace parser {
 
                 return ParseBinOpRHS(0, std::move(LHS));
             }
+
+            return nullptr;
         }
 
         else if (keyword_str == "char") {
@@ -206,10 +210,14 @@ namespace parser {
                 std::fprintf(stderr, "error: Expected '=' at line %d\n", curr_line);
                 std::exit(EXIT_FAILURE);
             }
+
+            return nullptr;
         }
+
+        return nullptr;
     }
 
-    std::unique_ptr<ast::ExprAST> parseStatement() {
+    std::unique_ptr<ast::ExprAST> Parser::parseStatement() {
         if (identifier_str.empty()) return nullptr;
 
         if (identifier_str == "int")
@@ -218,7 +226,7 @@ namespace parser {
         return nullptr;
     }
 
-    static std::unique_ptr<ast::ExprAST> ParseBinOpRHS(int ExprPrec,
+    std::unique_ptr<ast::ExprAST> Parser::ParseBinOpRHS(int ExprPrec,
                                               std::unique_ptr<ast::ExprAST> LHS) {
         // If this is a binop, find its precedence.
         while (true) {
@@ -251,25 +259,25 @@ namespace parser {
         }
     }
 
-    void parseFunctionPrototype() {
-
+    std::unique_ptr<ast::ExprAST> Parser::parseFunctionPrototype() {
+        return nullptr;
     }
 
-    void parseFunction() {
-
+    std::unique_ptr<ast::ExprAST>  Parser::parseFunction() {
+        return nullptr;
     }
 
-    std::unique_ptr<ast::ExprAST> parseNumberExpr() {
+    std::unique_ptr<ast::ExprAST> Parser::parseNumberExpr() {
         auto result = std::make_unique<ast::IntNumberExprAST>(token_number_int);
         return std::move(result);
     }
 
-    std::unique_ptr<ast::ExprAST> parseDoubleExpr() {
+    std::unique_ptr<ast::ExprAST> Parser::parseDoubleExpr() {
         auto result = std::make_unique<ast::DoubleNumberExprAST>(token_number_double);
         return std::move(result);
     }
 
-    std::unique_ptr<ast::ExprAST> parsePrimary() {
+    std::unique_ptr<ast::ExprAST> Parser::parsePrimary() {
         auto tok = lexer::getNextToken();
 
         if (tok == tok_number || tok == tok_double) {
