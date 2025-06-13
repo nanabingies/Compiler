@@ -40,13 +40,14 @@ int main(int argc, char* argv[]) {
     init_globals();
 
     input_stream.open(filename, std::fstream::in);
+    parser::Parser parser(filename);
 
     while (std::getline(input_stream, curr_buffer)) {
         curr_line++;
-        std::cout << "Parsing source line: " << curr_buffer << std::endl;
         if (!curr_buffer.empty()) {
+            std::cout << "Parsing source line: " << curr_buffer << std::endl;
             // Process the current line buffer
-            parser::parseBuffer();
+            parser::parseBuffer(parser);
         }
     }
 
