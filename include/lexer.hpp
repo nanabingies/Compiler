@@ -47,6 +47,7 @@ extern std::string identifier_str;
 extern std::string keyword_str;
 
 extern int token_number_int;
+extern double token_number_double;
 
 static std::unordered_set<std::string> keywords = { 
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
@@ -68,6 +69,7 @@ const std::unordered_set<std::string> binaryOperators = {
 
 namespace lexer {
     tokens getNextToken();
+    void putback();
 }
 
 #endif

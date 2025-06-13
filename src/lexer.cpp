@@ -7,10 +7,11 @@ int curr_token_index = 0;
 std::string identifier_str;
 std::string keyword_str;
 int token_number_int;
+double token_number_double;
 //std::string token_number_str;
 
 int getNext() {
-    return static_cast<unsigned char>(curr_buffer[curr_token_index++]);
+    return curr_buffer[curr_token_index++];
 }
 
 bool isKeyword(std::string& word) {
@@ -22,6 +23,10 @@ bool isBinaryOperator(const std::string& token) {
 }
 
 namespace lexer {
+    void putback() {
+        curr_token_index -= 1;
+    }
+
     tokens getNextToken() {
         int tok = getNext();
         while (isspace(tok)) {
@@ -40,6 +45,7 @@ namespace lexer {
             // Keywords
             if (isKeyword(identifier_str)) {
                 keyword_str = std::move(identifier_str);
+                identifier_str = "";
                 return tok_keyword;
             }
 
