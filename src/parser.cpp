@@ -5,6 +5,25 @@
 #include "../include/utils.hpp"
 
 namespace parser {
+    tokens prevToken = tok_invalid;
+
+    int getOperatorPrecedence() {
+        auto tok = lexer::getNextToken();
+        prevToken = tok;
+
+        if (tok == tok_plus) {
+            return binopPrecedence['+'];
+        } else if (tok == tok_minus) {
+            return binopPrecedence['-'];
+        } else if (tok == tok_mul) {
+            return binopPrecedence['*'];
+        } else if (tok == tok_div) {
+            return binopPrecedence['/'];
+        }
+
+        return tok_invalid;
+    }
+
     void parseBuffer() {
         curr_token_index = 0;
         while (true) {
@@ -129,8 +148,8 @@ namespace parser {
         }
     }
 
-    void parseKeywordStatement() {
-        if (keyword_str.empty())    return;
+    std::unique_ptr<ast::ExprAST> parseKeywordStatement() {
+        if (keyword_str.empty())    return nullptr;
 
         if (keyword_str == "int") {
             // read identifier token
@@ -143,13 +162,39 @@ namespace parser {
             }
 
             // is it a number, string or identifier
+            auto tempToken = lexer::getNextToken();
             auto nextToken = lexer::getNextToken();
-            if (nextToken == tok_number) {
-                auto variableAst = std::make_unique<ast::VariableExprAST<int>>(identStr, token_number_int);
-            } else if (nextToken == tok_double) {
-                auto variableAst = std::make_unique<ast::VariableExprAST<double>>(identStr, token_number_int);
-            } else if (nextToken == tok_identifier) {
-                auto variableAst = std::make_unique<ast::VariableExprAST<std::string>>(identStr, identifier_str);
+
+            if (tempToken == tok_invalid || tempToken == tok_semicolon) {
+                std::fprintf(stderr, "error: Expected literal at line %d\n", curr_line);
+                std::exit(EXIT_FAILURE);
+            }
+
+            if (tempToken == tok_number && nextToken == tok_number) {
+                std::fprintf(stderr, "error: syntax error on line %d\n", curr_line);
+                std::exit(EXIT_FAILURE);
+            }
+
+            // end of statement.
+            // build a VariableExprAST
+            if (nextToken == tok_semicolon) {
+                if (tempToken == tok_number) {
+                    auto variableAst = std::make_unique<ast::VariableExprAST<int>>(identStr, token_number_int);
+                } else if (tempToken == tok_double) {
+                    auto variableAst = std::make_unique<ast::VariableExprAST<double>>(identStr, token_number_int);
+                } else if (tempToken == tok_identifier) {
+                    auto variableAst = std::make_unique<ast::VariableExprAST<std::string>>(identStr, identifier_str);
+                }
+            }
+
+            if (nextToken == tok_plus || nextToken == tok_minus || nextToken == tok_mul || nextToken == tok_div) {
+                lexer::putback();  // return operator
+                lexer::putback();  // return previous number
+
+                auto LHS = parsePrimary();
+                if (!LHS)   return nullptr;
+
+                return ParseBinOpRHS(0, std::move(LHS));
             }
         }
 
@@ -164,11 +209,46 @@ namespace parser {
         }
     }
 
-    void parseStatement() {
-        if (identifier_str.empty()) return;
+    std::unique_ptr<ast::ExprAST> parseStatement() {
+        if (identifier_str.empty()) return nullptr;
 
         if (identifier_str == "int")
             return parseKeywordStatement();
+
+        return nullptr;
+    }
+
+    static std::unique_ptr<ast::ExprAST> ParseBinOpRHS(int ExprPrec,
+                                              std::unique_ptr<ast::ExprAST> LHS) {
+        // If this is a binop, find its precedence.
+        while (true) {
+            int TokPrec = getOperatorPrecedence();
+
+            // If this is a binop that binds at least as tightly as the current binop,
+            // consume it, otherwise we are done.
+            if (TokPrec < ExprPrec)
+                return LHS;
+
+            // Okay, we know this is a binop.
+            tokens BinOp = prevToken;
+
+            // Parse the primary expression after the binary operator.
+            auto RHS = parsePrimary();
+            if (!RHS)
+                return nullptr;
+
+            // If BinOp binds less tightly with RHS than the operator after RHS, let
+            // the pending operator take RHS as its LHS.
+            int NextPrec = getOperatorPrecedence();
+            if (TokPrec < NextPrec) {
+                RHS = ParseBinOpRHS(TokPrec + 1, std::move(RHS));
+                if (!RHS)
+                    return nullptr;
+            }
+
+            // Merge LHS/RHS.
+            LHS = std::make_unique<ast::BinaryExprAST>(BinOp, std::move(LHS), std::move(RHS));
+        }
     }
 
     void parseFunctionPrototype() {
@@ -179,5 +259,27 @@ namespace parser {
 
     }
 
+    std::unique_ptr<ast::ExprAST> parseNumberExpr() {
+        auto result = std::make_unique<ast::IntNumberExprAST>(token_number_int);
+        return std::move(result);
+    }
+
+    std::unique_ptr<ast::ExprAST> parseDoubleExpr() {
+        auto result = std::make_unique<ast::DoubleNumberExprAST>(token_number_double);
+        return std::move(result);
+    }
+
+    std::unique_ptr<ast::ExprAST> parsePrimary() {
+        auto tok = lexer::getNextToken();
+
+        if (tok == tok_number || tok == tok_double) {
+            return parseNumberExpr();
+        } else if (tok == tok_identifier) {
+            // first check if variable is already defined.
+            // then build ast for that.
+        }
+
+        return nullptr;
+    }
 
 };
