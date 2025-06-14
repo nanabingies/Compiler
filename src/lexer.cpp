@@ -1,7 +1,7 @@
 #include "../include/lexer.hpp"
 #include "../include/utils.hpp"
 
-int curr_token = 0;
+tokens curr_token = tok_invalid;
 int curr_token_index = 0;
 
 std::string identifier_str;
@@ -26,6 +26,10 @@ namespace lexer {
     void putback() {
         curr_token_index -= 1;
         while (isspace(curr_buffer[curr_token_index])) {
+            curr_token_index -= 1;
+        }
+
+        while (curr_token == curr_buffer[curr_token_index]) {
             curr_token_index -= 1;
         }
     }
