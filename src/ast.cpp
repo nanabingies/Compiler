@@ -26,7 +26,7 @@ namespace ast {
         llvm::BasicBlock *BB = llvm::BasicBlock::Create(*llvmContext, "entry", function);
         llvmBuilder->SetInsertPoint(BB);
 
-        llvm::Type *intType = llvm::Type::getInt32Ty(*llvmContext);
+        llvm::Type *intType = llvm::Type::getInt64Ty(*llvmContext);
         llvm::Value *xAlloca = llvmBuilder->CreateAlloca(intType, nullptr, name);
         llvm::Value *intConstant = llvm::ConstantInt::get(intType, value);
 
@@ -36,6 +36,8 @@ namespace ast {
         llvmBuilder->CreateRetVoid();
 
         NamedValues[name] = intConstant;
+
+        llvm::verifyFunction(*function);
     }
 
     llvm::Value* ast::IntNumberExprAST::codegen() {
@@ -59,7 +61,8 @@ namespace ast {
 
         switch (op) {
             case tok_plus:
-                return llvmBuilder->CreateAdd(left, right, "c_add");
+            return createAddFunc(std::move(left), std::move(right));
+                //return llvmBuilder->CreateAdd(left, right, "c_add");
             case tok_minus:
                 return llvmBuilder->CreateSub(left, right, "c_sub");
             case tok_mul:
@@ -75,4 +78,36 @@ namespace ast {
         auto value = NamedValues[name];
         return value;
     }
+
+    llvm::Value* BinaryExprAST::createAddFunc(llvm::Value* left, llvm::Value* right) {
+        llvm::Function* function = llvmModule->getFunction(defaultFunctionName);
+        if (function == nullptr) {
+            // Create function
+            llvm::FunctionType *funcType = llvm::FunctionType::get(llvm::Type::getVoidTy(*llvmContext), false);
+            function = llvm::Function::Create(funcType, llvm::Function::ExternalLinkage, defaultFunctionName, *llvmModule);
+        }
+
+        if (function == nullptr) {
+            std::cerr << "Failed to get function for variable definition" << std::endl;
+            return nullptr;
+        }
+
+        llvm::BasicBlock *BB = llvm::BasicBlock::Create(*llvmContext, "entry", function);
+        llvmBuilder->SetInsertPoint(BB);
+
+        llvm::Type *intType = llvm::Type::getInt64Ty(*llvmContext);
+        llvm::Value *xAlloca = llvmBuilder->CreateAlloca(intType, nullptr); // x
+        
+        auto result = llvmBuilder->CreateAdd(left, right, "c_add");
+
+        llvmBuilder->CreateStore(result, xAlloca);
+
+        // Add return void
+        llvmBuilder->CreateRetVoid();
+
+        if (llvm::verifyFunction(*function) == true)    return nullptr;
+
+        return result;
+    }
+
 };
