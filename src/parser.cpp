@@ -213,6 +213,32 @@ namespace parser {
             }
 
             if (nextToken == tok_plus || nextToken == tok_minus || nextToken == tok_mul || nextToken == tok_div) {
+                tokens binOp = nextToken;
+
+                if (tempToken == tok_number) {
+                    auto LHS = std::make_unique<ast::IntNumberExprAST>(token_number_int);
+
+                    if (lexer::getNextToken() == tok_number) {
+                        auto RHS = std::make_unique<ast::IntNumberExprAST>(token_number_int);
+
+                        nextToken = lexer::getNextToken();
+                        if (nextToken == tok_semicolon) {
+                            // end of statement
+                            return std::make_unique<ast::BinaryExprAST>(binOp, std::move(LHS), std::move(RHS));
+                        } else {
+                            // there are more operations
+                            // putback previous 2 tokens
+                            lexer::putback();
+                            lexer::putback();
+                        }
+                    } else {
+                        // return variable
+                        lexer::putback();
+                    }
+                }
+
+                // Why don't we define putback functions for each type. int, char, string etc.
+
                 lexer::putback();  // return operator
                 lexer::putback();  // return previous number
 
@@ -325,7 +351,6 @@ namespace parser {
         if (auto *constInt = llvm::dyn_cast<llvm::ConstantInt>(variableValue)) {
             int64_t intValue = constInt->getSExtValue();
             return std::make_unique<ast::IntNumberExprAST>(intValue);
-            std::cout << "Integer: " << intValue << "\n";
         }
 
         return nullptr;
