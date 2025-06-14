@@ -10,17 +10,16 @@
 #include <memory>
 #include <utility>
 
-extern std::unique_ptr<llvm::LLVMContext> TheContext;
-extern std::unique_ptr<llvm::Module> TheModule;
-extern std::unique_ptr<llvm::IRBuilder<>> Builder;
-extern std::map<std::string, llvm::Value*> NamedValues;
-
 namespace ast {
+
+    extern std::unique_ptr<llvm::LLVMContext> llvmContext;
+    extern std::unique_ptr<llvm::Module> llvmModule;
+    extern std::unique_ptr<llvm::IRBuilder<>> llvmBuilder;
 
     class ExprAST {
     public:
         virtual ~ExprAST() = default;
-        //virtual llvm::Value* codegen() = 0;
+        virtual llvm::Value* codegen() = 0;
     };
 
     class IntNumberExprAST : public ExprAST {
@@ -29,7 +28,7 @@ namespace ast {
     public:
         explicit IntNumberExprAST(const double value) : value(value) {}
 
-        //llvm::Value* codegen() override;
+        llvm::Value* codegen() override;
     };
 
     class DoubleNumberExprAST : public ExprAST {
@@ -38,19 +37,16 @@ namespace ast {
     public:
         explicit DoubleNumberExprAST(const double value) : value(value) {}
 
-        //llvm::Value* codegen() override;
+        llvm::Value* codegen() override;
     };
 
-    template<typename T>
     class VariableExprAST : public ExprAST {
         std::string name;
-        T value;
 
     public:
-        VariableExprAST(std::string  name, T value)
-            : name(std::move(name)), value(std::move(value)) {}
+        VariableExprAST(std::string  name) : name(std::move(name)) {}
 
-        //llvm::Value* codegen() override;
+        llvm::Value* codegen() override;
     };
 
     class BinaryExprAST : public ExprAST {
@@ -62,7 +58,7 @@ namespace ast {
         BinaryExprAST(const tokens op, std::unique_ptr<ExprAST> left, std::unique_ptr<ExprAST> right)
             : op(op), LHS(std::move(left)), RHS(std::move(right)) {}
 
-        //llvm::Value* codegen() override;
+        llvm::Value* codegen() override;
     };
 
     class IdentifierExprAST : public ExprAST {
@@ -73,7 +69,7 @@ namespace ast {
         IdentifierExprAST(std::string  name, std::unique_ptr<ExprAST> value)
             : name(std::move(name)), value(std::move(value)) {}
 
-        //llvm::Value* codegen() override;
+        llvm::Value* codegen() override;
     };
 };
 
