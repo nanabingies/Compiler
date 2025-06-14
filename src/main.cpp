@@ -4,7 +4,7 @@
 
 std::string curr_buffer;
 int curr_line;
-std::map<char, int> binopPrecedence;
+std::map<tokens, int> binopPrecedence;
 
 void init_globals() {
     curr_buffer = "";
@@ -12,14 +12,16 @@ void init_globals() {
     identifier_str = "";
     keyword_str = "";
 
-    binopPrecedence['+'] = 10;
-    binopPrecedence['-'] = 10;
-    binopPrecedence['*'] = 20;
-    binopPrecedence['/'] = 20;
+    binopPrecedence[tok_plus] = 10;
+    binopPrecedence[tok_minus] = 10;
+    binopPrecedence[tok_mul] = 20;
+    binopPrecedence[tok_div] = 20;
 
     ast::llvmContext = std::make_unique<llvm::LLVMContext>();
     ast::llvmModule = std::make_unique<llvm::Module>("compiler", *ast::llvmContext);
     ast::llvmBuilder = std::make_unique<llvm::IRBuilder<>>(*ast::llvmContext);
+    ast::NamedValues = {};
+    ast::defaultFunctionName = "__anon_func";
 }
 
 int main(int argc, char* argv[]) {
@@ -29,6 +31,10 @@ int main(int argc, char* argv[]) {
     }
 
     const auto filename = std::string(argv[1]);
+    if (argv[2] != NULL) {
+        const auto disassFileName = std::string(argv[2]);
+        disass_stream.open(disassFileName, std::fstream::out | std::ios::trunc);
+    }
 
     if (file_exists(filename) == false) {
         std::fprintf(stderr, "%s: no such file or directory: %s\n", program_name.c_str(), argv[1]);
@@ -41,9 +47,15 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+    //if (file_exists(disassFileName) == true) {
+    //    // Delete the file
+    //    std::filesystem::remove(disassFileName);
+    //}
+
     init_globals();
 
     input_stream.open(filename, std::fstream::in);
+    
     parser::Parser parser;
 
     while (std::getline(input_stream, curr_buffer)) {
@@ -56,6 +68,8 @@ int main(int argc, char* argv[]) {
     }
 
     input_stream.close();
+    if (disass_stream.is_open())
+        disass_stream.close();
 
     return 0;
 }
