@@ -11,7 +11,12 @@ namespace parser {
         auto tok = lexer::getNextToken();
         prevToken = tok;
 
-        if (tok == tok_plus) {
+        if (binopPrecedence.find(tok) == binopPrecedence.end())
+            return tok_invalid;
+
+        return binopPrecedence[tok];
+
+        /*if (tok == tok_plus) {
             return binopPrecedence['+'];
         } else if (tok == tok_minus) {
             return binopPrecedence['-'];
@@ -21,7 +26,7 @@ namespace parser {
             return binopPrecedence['/'];
         }
 
-        return tok_invalid;
+        return tok_invalid;*/
     }
 
     void parseBuffer(Parser parser) {
@@ -32,13 +37,29 @@ namespace parser {
             switch (tok) {
                 case tok_eof:
                     return;
-                case tok_identifier:
+                case tok_identifier: {
                     std::fprintf(stdout, "Handling tok_identifier\n");
-                    parser.parseStatement();
+                    if (auto stmt = parser.parseStatement()) {
+                        if (auto* stmtIR = stmt->codegen()) {
+                            std::cout << "Parsed token identifier: ";
+                            stmtIR->print(llvm::errs());
+                            std::cout << std::endl;
+                            ast::llvmModule->print(llvm::errs(), nullptr);
+                        }
+                    }
+                }
                     break;
-                case tok_keyword:
+                case tok_keyword: {
                     std::fprintf(stdout, "Handling tok_keyword\n");
-                    parser.parseKeywordStatement();
+                    if (auto keyStmt = parser.parseKeywordStatement()) {
+                        if (auto* keyStmtIR = keyStmt->codegen()) {
+                            std::cout << "Parsed token keyword: ";
+                            keyStmtIR->print(llvm::errs());
+                            std::cout << std::endl;
+                            ast::llvmModule->print(llvm::errs(), nullptr);
+                        }
+                    }
+                }
                     break;
                 case tok_print:
                     std::fprintf(stderr, "Print Not yet implemented\n");
@@ -187,7 +208,8 @@ namespace parser {
                 } else if (tempToken == tok_identifier) {
                     return std::make_unique<ast::VariableExprAST>(identStr, identifier_str);
                 }*/
-               return std::make_unique<ast::VariableExprAST>(identStr);
+               return std::make_unique<ast::VariableExprAST>(identStr, token_number_int);
+               //return std::make_unique<ast::VariableConstantExprAST>(identStr, token_number_int);
             }
 
             if (nextToken == tok_plus || nextToken == tok_minus || nextToken == tok_mul || nextToken == tok_div) {
@@ -283,11 +305,38 @@ namespace parser {
         if (tok == tok_number || tok == tok_double) {
             return parseNumberExpr();
         } else if (tok == tok_identifier) {
+            lexer::putback();
             // first check if variable is already defined.
             // then build ast for that.
+            return parseBinOpExpr();
         }
 
         return nullptr;
+    }
+
+    std::unique_ptr<ast::ExprAST> Parser::parsePrimaryVariable() {
+        // Get variable name and return
+        if (ast::NamedValues.find(identifier_str) == ast::NamedValues.end()) {
+            std::cerr << "error: variable '" << identifier_str << "' not defined" << std::endl;
+            return nullptr;
+        }
+
+        auto* variableValue = ast::NamedValues[identifier_str];
+        if (auto *constInt = llvm::dyn_cast<llvm::ConstantInt>(variableValue)) {
+            int64_t intValue = constInt->getSExtValue();
+            return std::make_unique<ast::IntNumberExprAST>(intValue);
+            std::cout << "Integer: " << intValue << "\n";
+        }
+
+        return nullptr;
+    }
+
+    std::unique_ptr<ast::ExprAST> Parser::parseBinOpExpr() {
+        auto LHS = parsePrimaryVariable();
+        if (!LHS)
+            return nullptr;
+
+        return ParseBinOpRHS(0, std::move(LHS));
     }
 
 };
