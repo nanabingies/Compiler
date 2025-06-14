@@ -13,10 +13,9 @@ namespace parser {
     void parseTokenStatement(int);
 
     class Parser {
-        std::string filename;
 
     public:
-        explicit Parser(std::string name) : filename(name) {}
+        explicit Parser() = default;
 
         std::unique_ptr<ast::ExprAST> parseStatement();
         std::unique_ptr<ast::ExprAST> parseKeywordStatement();

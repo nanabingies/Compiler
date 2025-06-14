@@ -226,8 +226,7 @@ namespace parser {
         return nullptr;
     }
 
-    std::unique_ptr<ast::ExprAST> Parser::ParseBinOpRHS(int ExprPrec,
-                                              std::unique_ptr<ast::ExprAST> LHS) {
+    std::unique_ptr<ast::ExprAST> Parser::ParseBinOpRHS(int ExprPrec, std::unique_ptr<ast::ExprAST> LHS) {
         // If this is a binop, find its precedence.
         while (true) {
             int TokPrec = getOperatorPrecedence();
