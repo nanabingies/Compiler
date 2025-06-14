@@ -2,6 +2,7 @@
 #define __PARSER_HPP
 
 #include "ast.hpp"
+#include "codegen.hpp"
 #include <map>
 #include <utility>
 

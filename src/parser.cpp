@@ -180,13 +180,14 @@ namespace parser {
             // end of statement.
             // build a VariableExprAST
             if (nextToken == tok_semicolon) {
-                if (tempToken == tok_number) {
-                    return std::make_unique<ast::VariableExprAST<int>>(identStr, token_number_int);
+                /*if (tempToken == tok_number) {
+                    return std::make_unique<ast::VariableExprAST>(identStr, token_number_int);
                 } else if (tempToken == tok_double) {
-                    return std::make_unique<ast::VariableExprAST<double>>(identStr, token_number_int);
+                    return std::make_unique<ast::VariableExprAST>(identStr, token_number_int);
                 } else if (tempToken == tok_identifier) {
-                    return std::make_unique<ast::VariableExprAST<std::string>>(identStr, identifier_str);
-                }
+                    return std::make_unique<ast::VariableExprAST>(identStr, identifier_str);
+                }*/
+               return std::make_unique<ast::VariableExprAST>(identStr);
             }
 
             if (nextToken == tok_plus || nextToken == tok_minus || nextToken == tok_mul || nextToken == tok_div) {

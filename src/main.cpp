@@ -16,6 +16,10 @@ void init_globals() {
     binopPrecedence['-'] = 10;
     binopPrecedence['*'] = 20;
     binopPrecedence['/'] = 20;
+
+    ast::llvmContext = std::make_unique<llvm::LLVMContext>();
+    ast::llvmModule = std::make_unique<llvm::Module>("compiler", *ast::llvmContext);
+    ast::llvmBuilder = std::make_unique<llvm::IRBuilder<>>(*ast::llvmContext);
 }
 
 int main(int argc, char* argv[]) {
@@ -40,7 +44,7 @@ int main(int argc, char* argv[]) {
     init_globals();
 
     input_stream.open(filename, std::fstream::in);
-    parser::Parser parser(filename);
+    parser::Parser parser;
 
     while (std::getline(input_stream, curr_buffer)) {
         curr_line++;
