@@ -6,7 +6,7 @@
 #include <map>
 #include <utility>
 
-extern std::map<char, int> binopPrecedence;
+extern std::map<tokens, int> binopPrecedence;
 
 namespace parser {
     int getOperatorPrecedence();
@@ -26,8 +26,11 @@ namespace parser {
         std::unique_ptr<ast::ExprAST> ParseBinOpRHS(int, std::unique_ptr<ast::ExprAST>);
         std::unique_ptr<ast::ExprAST> parseNumberExpr();
         std::unique_ptr<ast::ExprAST> parseDoubleExpr();
+        //std::unique_ptr<ast::ExprAST> parseIdentifierExpr();
 
         std::unique_ptr<ast::ExprAST> parsePrimary();
+        std::unique_ptr<ast::ExprAST> parsePrimaryVariable();
+        std::unique_ptr<ast::ExprAST> parseBinOpExpr();
     };
 
     void parseBuffer(Parser);

@@ -15,6 +15,8 @@ namespace ast {
     extern std::unique_ptr<llvm::LLVMContext> llvmContext;
     extern std::unique_ptr<llvm::Module> llvmModule;
     extern std::unique_ptr<llvm::IRBuilder<>> llvmBuilder;
+    extern std::map<std::string, llvm::Value*> NamedValues;
+    extern std::string defaultFunctionName;
 
     class ExprAST {
     public:
@@ -42,11 +44,20 @@ namespace ast {
 
     class VariableExprAST : public ExprAST {
         std::string name;
+        int value;
 
     public:
-        VariableExprAST(std::string  name) : name(std::move(name)) {}
+        VariableExprAST(std::string name, int value);
 
         llvm::Value* codegen() override;
+    };
+
+    class VariableConstantExprAST : public VariableExprAST {
+        int constantValue;
+
+    public:
+        VariableConstantExprAST(std::string name, const int value)
+            : VariableExprAST(name, value), constantValue(value) {}
     };
 
     class BinaryExprAST : public ExprAST {
