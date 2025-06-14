@@ -40,7 +40,7 @@ enum tokens : std::int32_t {
     tok_print       // printf
 };
 
-extern int curr_token;
+extern tokens curr_token;
 extern int curr_token_index;
 
 extern std::string identifier_str;

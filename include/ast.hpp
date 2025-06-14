@@ -6,6 +6,7 @@
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Verifier.h"
 #include <string>
 #include <memory>
 #include <utility>
@@ -70,6 +71,7 @@ namespace ast {
             : op(op), LHS(std::move(left)), RHS(std::move(right)) {}
 
         llvm::Value* codegen() override;
+        llvm::Value* createAddFunc(llvm::Value*, llvm::Value*);
     };
 
     class IdentifierExprAST : public ExprAST {
