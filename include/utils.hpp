@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <filesystem>
 #include <string_view>
 
 // compile name
@@ -16,6 +17,9 @@ static std::string program_name = "compiler";
 
 // input file stream
 static std::fstream input_stream{};
+
+// disassembly file stram
+static std::ofstream disass_stream{};
 
 // Current Line number
 extern int curr_line;

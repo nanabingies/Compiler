@@ -25,6 +25,9 @@ bool isBinaryOperator(const std::string& token) {
 namespace lexer {
     void putback() {
         curr_token_index -= 1;
+        while (isspace(curr_buffer[curr_token_index])) {
+            curr_token_index -= 1;
+        }
     }
 
     tokens getNextToken() {
