@@ -72,6 +72,9 @@ namespace ast {
 
         llvm::Value* codegen() override;
         llvm::Value* createAddFunc(llvm::Value*, llvm::Value*);
+        llvm::Value* createSubFunc(llvm::Value*, llvm::Value*);
+        llvm::Value* createMulFunc(llvm::Value*, llvm::Value*);
+        llvm::Value* createDivFunc(llvm::Value*, llvm::Value*);
     };
 
     class IdentifierExprAST : public ExprAST {
