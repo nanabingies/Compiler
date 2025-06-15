@@ -37,6 +37,8 @@ namespace parser {
             switch (tok) {
                 case tok_eof:
                     return;
+                case tok_semicolon:
+                    return;
                 case tok_identifier: {
                     std::fprintf(stdout, "Handling tok_identifier\n");
                     if (auto stmt = parser.parseStatement()) {
@@ -65,7 +67,7 @@ namespace parser {
                     std::fprintf(stderr, "Print Not yet implemented\n");
                     break;
                 default:
-                    std::fprintf(stderr, "Unknown token %c\n", static_cast<char>(tok));
+                    std::fprintf(stderr, "Unknown token %d on line %d\n", static_cast<int>(tok), curr_line);
                     std::exit(EXIT_FAILURE);
             }
         }
@@ -245,7 +247,17 @@ namespace parser {
                 auto LHS = parsePrimary();
                 if (!LHS)   return nullptr;
 
-                return ParseBinOpRHS(0, std::move(LHS));
+                auto returnValue = ParseBinOpRHS(0, std::move(LHS));
+                if (!returnValue)   return nullptr;
+                return returnValue;
+
+                /*if (lexer::getNextToken() == tok_semicolon) {
+                    return returnValue;
+                } else {
+                    std::cerr << "error: Invalid syntax at line " << curr_line << std::endl;
+                    std::cerr << "Expected a semicolon ';'" << std::endl;
+                    std::exit(EXIT_FAILURE);
+                }*/
             }
 
             return nullptr;
