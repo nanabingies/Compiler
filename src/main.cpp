@@ -21,7 +21,7 @@ void init_globals() {
     ast::llvmModule = std::make_unique<llvm::Module>("compiler", *ast::llvmContext);
     ast::llvmBuilder = std::make_unique<llvm::IRBuilder<>>(*ast::llvmContext);
     ast::NamedValues = {};
-    ast::defaultFunctionName = "__anon_func";
+    ast::defaultFunctionName = "__global_func";   // function for global variables
 }
 
 int main(int argc, char* argv[]) {
