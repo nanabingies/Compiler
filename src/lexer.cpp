@@ -14,14 +14,6 @@ int getNext() {
     return curr_buffer[curr_token_index++];
 }
 
-bool isKeyword(std::string& word) {
-    return keywords.find(word) != keywords.end();
-}
-
-bool isBinaryOperator(const std::string& token) {
-    return binaryOperators.find(token) != binaryOperators.end();
-}
-
 namespace lexer {
     void putback() {
         curr_token_index -= 1;
@@ -109,5 +101,13 @@ namespace lexer {
         }
 
         return tok_invalid;
+    }
+
+    bool isKeyword(std::string& word) {
+        return keywords.find(word) != keywords.end();
+    }
+
+    bool isBinaryOperator(const std::string& token) {
+        return binaryOperators.find(token) != binaryOperators.end();
     }
 };

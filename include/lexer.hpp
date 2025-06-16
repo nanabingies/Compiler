@@ -2,6 +2,7 @@
 #define __LEXER_HPP_
 
 #include <map>
+#include <string.h>
 #include <iostream>
 #include <unordered_set>
 
@@ -70,6 +71,9 @@ const std::unordered_set<std::string> binaryOperators = {
 namespace lexer {
     tokens getNextToken();
     void putback();
+
+    bool isKeyword(std::string&);
+    bool isBinaryOperator(const std::string&);
 }
 
 #endif
