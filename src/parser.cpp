@@ -15,18 +15,6 @@ namespace parser {
             return tok_invalid;
 
         return binopPrecedence[tok];
-
-        /*if (tok == tok_plus) {
-            return binopPrecedence['+'];
-        } else if (tok == tok_minus) {
-            return binopPrecedence['-'];
-        } else if (tok == tok_mul) {
-            return binopPrecedence['*'];
-        } else if (tok == tok_div) {
-            return binopPrecedence['/'];
-        }
-
-        return tok_invalid;*/
     }
 
     void parseBuffer(Parser parser) {
@@ -181,8 +169,14 @@ namespace parser {
             lexer::getNextToken();
             auto identStr = identifier_str;
 
+            // If identifer string is in keywords list, return an error
+            if (lexer::isKeyword(identStr)) {
+                std::cerr << "error: Expected identifier name not keyword at line " << curr_line << std::endl;
+                std::exit(EXIT_FAILURE);
+            } 
+
             if (lexer::getNextToken() != tok_equals) {
-                std::fprintf(stderr, "error: Expected '=' at line %d\n", curr_line);
+                std::cerr << "error: Expected '=' at line " << curr_line << std::endl;
                 std::exit(EXIT_FAILURE);
             }
 
@@ -203,41 +197,12 @@ namespace parser {
             // end of statement.
             // build a VariableExprAST
             if (nextToken == tok_semicolon) {
-                /*if (tempToken == tok_number) {
-                    return std::make_unique<ast::VariableExprAST>(identStr, token_number_int);
-                } else if (tempToken == tok_double) {
-                    return std::make_unique<ast::VariableExprAST>(identStr, token_number_int);
-                } else if (tempToken == tok_identifier) {
-                    return std::make_unique<ast::VariableExprAST>(identStr, identifier_str);
-                }*/
                return std::make_unique<ast::VariableExprAST>(identStr, token_number_int);
                //return std::make_unique<ast::VariableConstantExprAST>(identStr, token_number_int);
             }
 
-            if (nextToken == tok_plus || nextToken == tok_minus || nextToken == tok_mul || nextToken == tok_div) {
+            //if (nextToken == tok_plus || nextToken == tok_minus || nextToken == tok_mul || nextToken == tok_div) {
                 tokens binOp = nextToken;
-
-                if (tempToken == tok_number) {
-                    auto LHS = std::make_unique<ast::IntNumberExprAST>(token_number_int);
-
-                    if (lexer::getNextToken() == tok_number) {
-                        auto RHS = std::make_unique<ast::IntNumberExprAST>(token_number_int);
-
-                        nextToken = lexer::getNextToken();
-                        if (nextToken == tok_semicolon) {
-                            // end of statement
-                            return std::make_unique<ast::BinaryExprAST>(binOp, std::move(LHS), std::move(RHS));
-                        } else {
-                            // there are more operations
-                            // putback previous 2 tokens
-                            lexer::putback();
-                            lexer::putback();
-                        }
-                    } else {
-                        // return variable
-                        lexer::putback();
-                    }
-                }
 
                 // Why don't we define putback functions for each type. int, char, string etc.
 
@@ -249,6 +214,7 @@ namespace parser {
 
                 auto returnValue = ParseBinOpRHS(0, std::move(LHS));
                 if (!returnValue)   return nullptr;
+                ast::NamedValues[identStr] = returnValue->codegen();
                 return returnValue;
 
                 /*if (lexer::getNextToken() == tok_semicolon) {
@@ -258,7 +224,7 @@ namespace parser {
                     std::cerr << "Expected a semicolon ';'" << std::endl;
                     std::exit(EXIT_FAILURE);
                 }*/
-            }
+            //}
 
             return nullptr;
         }
@@ -278,13 +244,36 @@ namespace parser {
         return nullptr;
     }
 
+    /*
+    *   Statements are of the form
+    *   <statement> 
+    *           ::= <statement> op <statement>;     // where op can be any of the binary operators
+    *           ::= <statement>;
+    *           ::= ...
+    */
     std::unique_ptr<ast::ExprAST> Parser::parseStatement() {
         if (identifier_str.empty()) return nullptr;
 
-        if (identifier_str == "int")
-            return parseKeywordStatement();
+        // Check that next line is '='
+        if (lexer::getNextToken() != tok_equals) {
+            std::cerr << "error: syntax error. Expected '=' after identifier " << identifier_str << " at line " << curr_line << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
 
-        return nullptr;
+        // Handle case: <statement> op <statement>;
+        auto LHS = parsePrimary();
+        if (!LHS)   return nullptr;
+
+        auto result = ParseBinOpRHS(0, std::move(LHS));
+        if (lexer::getNextToken() != tok_semicolon) {
+            std::cerr << "error: syntax error. Expected ';' at line " << curr_line << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        return result;
+
+        // TODO:
+        // Handle case: <statement>;
+        // check if identifier exists in current function scope
     }
 
     std::unique_ptr<ast::ExprAST> Parser::ParseBinOpRHS(int ExprPrec, std::unique_ptr<ast::ExprAST> LHS) {
@@ -304,6 +293,7 @@ namespace parser {
             auto RHS = parsePrimary();
             if (!RHS)
                 return nullptr;
+            lexer::putback();
 
             // If BinOp binds less tightly with RHS than the operator after RHS, let
             // the pending operator take RHS as its LHS.
